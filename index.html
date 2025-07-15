@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Snake 2.0</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ✅ Main Menu -->
+  <div id="menu" class="overlay">
+    <div style="height: 10vh;"></div>
+    <h1 id="SnakeM">SNAKE 2.0</h1>
+    <div class="menuButtons">
+      <button onclick="selectDifficulty()">Start Game</button>
+      <button onclick="showUsers()">Community</button>
+      <button onclick="showInstruction()">Instructions</button>
+      <button onclick="showLeaderboard()">Leaderboard</button>
+      <button onclick="confirmEdit()">Edit Name</button>
+      <button onclick="showFeedback()">Feedback</button>     
+      <button onclick="showAbout()">About</button> <!-- 👈 New button -->
+    </div>
+  </div>
+
+  <!-- ✅ Game Screen -->
+  <div id="game" class="hidden">
+    <div id="gameWrapper">
+      <div id="gameScaleBox"> <!-- ✅ Add wrapper -->
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="countdownOverlay" class="countdown-overlay">
+          <div id="countdownText" class="countdown-text"></div>
+        </div>
+
+        <div id="controls">
+          <button id="pauseBtn" onclick="togglePause()">Pause</button>
+          <button id="resumeBtn" onclick="togglePause()" style="display: none;">Resume</button>
+          <button class="exitBtn" onclick="confirmExit()">Exit</button>
+        </div>
+    
+        <!-- ✅ Mobile Controls -->
+        <div id="mobileControls">
+          <div class="mobileRow">
+            <button class="mobileButtons" onclick="move('UP')">⬆️</button>
+          </div>
+          <div class="mobileRow">
+            <button class="mobileButtons" onclick="move('LEFT')">⬅️</button>
+            <button class="mobileButtons" onclick="move('DOWN')">⬇️</button>
+            <button class="mobileButtons" onclick="move('RIGHT')">➡️</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ Game Over Screen -->
+  <div id="gameOver" class="hidden">
+    <div style="height: 5vh;"></div>
+  <div id="OverHeader"> Game Over </div>
+    <h2 id="gameOverText"></h2>
+    <div class="overButtons">
+      <button onclick="startGame()">Restart</button>
+      <button onclick="showMenu()">Cancel</button>
+      <button class="exitBtn" onclick="showMenu()">Exit</button>
+    </div>
+  </div>
+
+  <!-- 🔊 Sound Effects -->
+  <audio id="startSound" src="assets/startSound.mp3"></audio>
+  <audio id="eatSound" src="assets/eatSound.mp3"></audio>
+  <audio id="CongratulationsSound" src="assets/CongratulationsSound.mp3"></audio>
+  <audio id="gameOverSound" src="assets/gameOverSound.mp3"></audio>
+  <audio id="countdownSound" src="assets/countdownSound.mp3"></audio>
+  <audio id="goSound" src="assets/goSound.mp3"></audio>
+  <audio id="buttonSound" src="assets/buttonSound2.mp3"></audio>
+
+
+  <div id="difficultyModal" class="modal" >
+    <div class="modal-content">
+      <h2 id="difficulty">Select Difficulty</h2>
+      <div>
+        <button onclick="setDifficulty('e')">Easy</button>
+        <button onclick="setDifficulty('m')">Medium</button>
+        <button onclick="setDifficulty('h')">Hard</button>
+        <button class="exitBtn" onclick="closeDifficulty()">X</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="instructionModal" class="modal">
+    <div class="modal-content">
+      <h2 class="About"> Instructions </h2>
+      <p>
+        🐍 1. The snake (🟢) starts at the center.<br>
+        ⬆️ 2. Use the arrow keys to move the snake.<br>
+        🍎 3. Eat the fruits (🍎) to grow longer and score points.<br>
+        ⚠️ 4. Avoid hitting walls, yourself (🟢), or obstacles (⬛).<br>
+        ⏸️ 5. Press [P] or tap the 'Pause' button to pause the game.<br>
+        ▶️ 6. Press [P] again or tap the 'Resume' button to continue.<br>
+
+      </p>
+      <button onclick="closeInstructions()">Close</button>
+    </div>
+  </div>
+
+  <div id="aboutModal" class="modal">
+    <div class="modal-content">
+      <h2 class="About"> About This Game </h2>
+      <p>
+        🎮 Welcome to the Classic Snake Game — Remade with a Modern Touch!<br>
+        🚀 The snake (🟢) starts at the center of the arena.<br>
+        🐍 Eat the fruits (🍎) to grow longer and increase your score.<br>
+        ⚠️ Avoid crashing into walls, yourself, or obstacles (⬛).<br><br>
+        👨‍💻 Developed with ❤️ by <strong>Subhajit</strong><br>
+        <code><strong>Made in India 🇮🇳</strong></code>
+      </p>
+
+      <!-- 🔢 Your Serial Info -->
+      <div id="serialInfo" style="margin: 10px 0; font-size: 1.1rem;"></div>
+
+      <!-- 🧑‍🤝‍🧑 List of All Players -->
+      <ol id="userList" style="text-align: left; padding-left: 20px;"></ol>
+
+      <button onclick="closeAbout()">Close</button>
+    </div>
+  </div>
+
+
+  <div id="loadingOverlay">
+    <div>
+      <h2>Please Wait<br>Loading Game Content...</h2>
+        <span class="dots">
+          <span class="dot" id="dot1" style="color: rgb(255, 255, 0);">.</span>
+          <span class="dot" id="dot2" style="color: rgb(255, 165, 0);">.</span>
+          <span class="dot" id="dot3" style="color: rgb(14, 195, 14);">.</span>
+        </span>
+    </div>
+  </div>
+
+
+  <!-- ✅ Login Modal -->
+  <div id="loginModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h2 class="About"> Welcome </h2>
+        <h2>Enter Your Name To Get Started:</h2>
+        <input type="text" id="playerNameInput" placeholder="Your name" style="padding: 10px; font-size: 1rem; border-radius: 5px; border: none;" />
+        <p style="font-size: 0.75rem; color: #ccc; margin-top: 10px;">
+          🔒 We respect your privacy. <br> 💖 Join our growing family with your real name.
+        </p>
+        <button onclick="submitName()">Submit</button>
+    </div>
+  </div>
+
+
+  <div id="usersModal" class="modal">
+    <div class="modal-content">
+      <h2 class="About"> Our Community </h2>
+      
+      <!-- ✅ Your Serial Info -->
+      <div id="serialInfo" style="margin: 10px 0; font-size: 1.1rem;"></div>
+
+      <!-- ✅ User List -->
+      <ol id="userList" style="text-align: left; padding-left: 20px;"></ol>
+
+      <button onclick="closeUsers()">Close</button>
+    </div>
+  </div>
+
+  <div id="CongratulationsModal" class="modal">
+    <div class="modal-content">
+      <h2 class="About"> !! Congratulations !! </h2>
+      <h2> 🏆 New highScore: <span id="newHighScoreText"></span> 🎉 </h2>
+      <button onclick="closeCongratulations()">Close</button>
+    </div>
+  </div>
+
+  <div id="editUsernameModal" class="modal">
+    <div class="modal-content">
+      <h2 class="About">Edit User Name</h2>
+      <input type="text" id="editNameInput" placeholder="Enter new name" style="padding:10px; font-size:1rem; border-radius:5px; border:none;" />
+      <p style="font-size: 0.75rem; color: #ccc; margin-top: 10px;">
+        🔒 We respect your privacy. <br> 💖 Join our growing family with your real name.
+      </p>
+      <button onclick="submitEditedUsername()">Save</button>
+      <button onclick="closeEditUsername()">Cancel</button>
+    </div>
+  </div>
+
+  <div id="leaderboardModal" class="modal">
+    <div class="modal-content">
+      <h2 class="About"> Leaderboard </h2>
+      <h2> 🏆 Top Highscorers 🏆 </h2>
+      <ul id="leaderboardList" style="list-style: none; padding: 0; text-align: center;"></ul>
+      <button onclick="closeLeaderboard()">Close</button>
+    </div>
+  </div>
+
+  <div id="feedbackModal" class="modal">
+    <div class="modal-content">
+      <h2 class="About">🌟 Feedback</h2>
+
+      <div id="averageRating" style="font-size: 1.2rem; margin-bottom: 10px;">
+        <span id="avgRatingValue">⭐️⭐️⭐️⭐️⭐️</span>
+      </div>
+
+      <p>How was your experience with the Snake Game?</p>
+      
+      <div id="starRating" class="stars">
+        <span class="star" data-value="1">★</span>
+        <span class="star" data-value="2">★</span>
+        <span class="star" data-value="3">★</span>
+        <span class="star" data-value="4">★</span>
+        <span class="star" data-value="5">★</span>
+      </div>
+      
+      <button onclick="submitFeedback()">Submit</button>
+      <button onclick="closeFeedback()">Cancel</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+</html>
