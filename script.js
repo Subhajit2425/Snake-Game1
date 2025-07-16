@@ -179,16 +179,21 @@ const gameDiv = document.getElementById('game');
             case 'DOWN': y++; break;
         }
 
-        // Check collisions with wall, self, or obstacles
-        if (
-            x < 0 || x >= cols || y < 0 || y >= rows ||
-            tail.some(t => t.x === x && t.y === y) ||
-            obstacles.some(o => o.x === x && o.y === y)
-        ) {
-            gameOver = true;
-            endGame();
-            return;
+        
+        // Prevent self-collision only if tail is longer than 1
+        const hitSelf = nTail >= 2 && tail.some(t => t.x === x && t.y === y);
+
+        // Check wall or obstacle
+        const hitWall = x < 0 || x >= cols || y < 0 || y >= rows;
+        const hitObstacle = obstacles.some(o => o.x === x && o.y === y);
+
+        if (hitWall || hitSelf || hitObstacle) {
+          console.log("GAME OVER at:", { x, y, hitWall, hitSelf, hitObstacle });
+          gameOver = true;
+          endGame();
+          return;
         }
+
 
         // Update tail after head has moved
         tail.unshift({ x: prevX, y: prevY });
