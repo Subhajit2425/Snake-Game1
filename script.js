@@ -11,7 +11,7 @@ const gameDiv = document.getElementById('game');
     let rows = Math.floor(canvas.height / tileSize);
 
     let isCountingDown = false;
-    let x, y, dx, dy, score, nTail, tail, fruit, fruitNo = 5, obstacles, gameOver = false, dir = 'UP', gameNo = 0, isPaused = false;
+    let x, y, dx, dy, score, nTail, tail, fruit, fruitNo = 5, obstacles, gameOver = false, dir = '', gameNo = 0, isPaused = false;
     let speed = 100, difficulty = ' Easy ', highScore = 0, gameInterval, gameRunning = false, obstacleCount = 20;
 
     const startSound = document.getElementById('startSound');
@@ -25,8 +25,6 @@ const gameDiv = document.getElementById('game');
 
     function isOccupied(x, y, snakeHead, tail, fruits,  obstacles) {
       if (y <= 1) return true;  // It will prevent fruits and obstacles from being generated on the score text area
-
-      if (x === snakeHead.x && y < snakeHead.y) return true; 
 
       if (x === snakeHead.x && y === snakeHead.y) return true;
 
@@ -63,7 +61,7 @@ const gameDiv = document.getElementById('game');
       dx = dy = 0;
       score = 0;
       nTail = 0;
-      dir = 'UP';
+      dir = '';
       tail = [];
       fruit = [];
       obstacles = [];
