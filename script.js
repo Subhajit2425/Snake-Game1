@@ -191,7 +191,7 @@ const gameDiv = document.getElementById('game');
 
         if (hitWall || hitSelf || hitObstacle) {
           console.log("GAME OVER at:", { x, y, hitWall, hitSelf, hitObstacle });
-          vibrateMobile(200);
+          vibrateMobile([200, 100, 200]); // game over
 
           gameOver = true;
           endGame();
@@ -706,7 +706,7 @@ const gameDiv = document.getElementById('game');
         } else if (count === 0) {
           text.textContent = "Go!";
           goSound.play();
-          vibrateMobile(200);
+          vibrateMobile([200, 100, 200]); // game over
 
         } else {
           clearInterval(interval);
