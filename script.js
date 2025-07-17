@@ -191,6 +191,11 @@ const gameDiv = document.getElementById('game');
 
         if (hitWall || hitSelf || hitObstacle) {
           console.log("GAME OVER at:", { x, y, hitWall, hitSelf, hitObstacle });
+
+          if (/Mobi|Android|iPhone/i.test(navigator.userAgent) && navigator.vibrate) {
+            navigator.vibrate([200, 100, 200]); // buzz, pause, buzz
+          }
+
           gameOver = true;
           endGame();
           return;
@@ -204,13 +209,17 @@ const gameDiv = document.getElementById('game');
         // Check for fruit collision
         for (let i = 0; i < fruit.length; i++) {
             if (fruit[i].x === x && fruit[i].y === y) {
-            score += 10;
-            nTail++;
+              if (/Mobi|Android|iPhone/i.test(navigator.userAgent) && navigator.vibrate) {
+                navigator.vibrate(100); // Only on mobile
+              }
 
-            const eatClone = eatSound.cloneNode();
-            eatClone.play();
+              score += 10;
+              nTail++;
 
-            fruit[i] = getValidPosition({x, y}, tail, fruit, obstacles, cols, rows);
+              const eatClone = eatSound.cloneNode();
+              eatClone.play();
+
+              fruit[i] = getValidPosition({x, y}, tail, fruit, obstacles, cols, rows);
             }
         }
 
@@ -705,8 +714,8 @@ const gameDiv = document.getElementById('game');
           text.textContent = "Go!";
           goSound.play();
 
-          if (navigator.vibrate) {
-            navigator.vibrate(100); // vibrate for 100ms
+          if (/Mobi|Android|iPhone/i.test(navigator.userAgent) && navigator.vibrate) {
+            navigator.vibrate(100); // Only on mobile
           }
 
         } else {
