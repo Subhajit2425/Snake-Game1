@@ -191,7 +191,7 @@ const gameDiv = document.getElementById('game');
 
         if (hitWall || hitSelf || hitObstacle) {
           console.log("GAME OVER at:", { x, y, hitWall, hitSelf, hitObstacle });
-          vibrateMobile([300, 150, 300]); // longer vibration pattern for ending
+          vibrateMobile(500); // longer vibration pattern for ending
 
           gameOver = true;
           endGame();
@@ -659,7 +659,7 @@ const gameDiv = document.getElementById('game');
     function submitEditedUsername() {
       playButtonSound();
 
-      const newName = document.getElementById("alert").value.trim();
+      const newName = document.getElementById("editNameInput").value.trim(); // ✅ fixed ID
       const key = localStorage.getItem("userKey");
 
       if (!key || !newName) {
@@ -670,13 +670,23 @@ const gameDiv = document.getElementById('game');
       // ✅ Update in Firebase
       firebase.database().ref(`users/${key}`).update({
         name: newName
-      });
+      })
+      .then(() => {
+        // ✅ Update locally
+        localStorage.setItem("playerName", newName);
+        document.getElementById("editUsernameModal").style.display = "none";
+        CongratulationsSound.play();
+        alert("Your name has been updated!");
 
-      // ✅ Update locally
-      localStorage.setItem("playerName", newName);
-      document.getElementById("editUsernameModal").style.display = "none";
-      alert("Your name has been updated!");
+        // ✅ Update name on screen if displayed somewhere (optional)
+        const nameElement = document.getElementById("playerNameDisplay");
+        if (nameElement) nameElement.textContent = newName;
+      })
+      .catch(error => {
+        alert("Update failed: " + error.message);
+      });
     }
+
 
     function closeEditUsername() {
       playButtonSound();
@@ -706,7 +716,7 @@ const gameDiv = document.getElementById('game');
         } else if (count === 0) {
           text.textContent = "Go!";
           goSound.play();
-          vibrateMobile(200); // subtle buzz to indicate game started
+          vibrateMobile(300); // subtle buzz to indicate game started
 
         } else {
           clearInterval(interval);
@@ -839,6 +849,7 @@ const gameDiv = document.getElementById('game');
 
       // Save/overwrite feedback for this userKey
       feedbackRef.set(feedbackData).then(() => {
+        CongratulationsSound.play();
         alert("Thank You For Your Feedback! 💖");
         selectedRating = 0;
         closeFeedback();
