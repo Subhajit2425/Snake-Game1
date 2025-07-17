@@ -704,6 +704,11 @@ const gameDiv = document.getElementById('game');
         } else if (count === 0) {
           text.textContent = "Go!";
           goSound.play();
+
+          if (navigator.vibrate) {
+            navigator.vibrate(100); // vibrate for 100ms
+          }
+
         } else {
           clearInterval(interval);
           overlay.style.display = "none";
