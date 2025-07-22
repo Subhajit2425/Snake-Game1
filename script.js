@@ -10,7 +10,7 @@ const gameDiv = document.getElementById('game');
     let cols = Math.floor(canvas.width / tileSize);
     let rows = Math.floor(canvas.height / tileSize);
 
-    let isCountingDown = false;
+    window.isCountingDown = false;
     let x, y, dx, dy, score, nTail, tail, fruit, fruitNo = 5, obstacles, gameOver = false, dir = 'UP', gameNo = 0, isPaused = false;
     let speed = 100, difficulty = ' Easy ', highScore = 0, gameInterval, gameRunning = false, obstacleCount = 20;
     let directionLocked = false;
@@ -99,10 +99,11 @@ const gameDiv = document.getElementById('game');
     }
 
     function confirmExit() {
+      if (window.isCountingDown) return;
       playButtonSound();
 
       if (!isPaused) pauseGame();
-      const confirmLeave = confirm(" Are You Sure You Want To Quit The Game ? ");
+      const confirmLeave = confirm("⚠️ Are You Sure You Want To Quit The Game ? ");
       if (confirmLeave) {
         endGame();
       } else {
@@ -315,6 +316,14 @@ const gameDiv = document.getElementById('game');
     }
 
 
+    function newGame() {
+      playButtonSound();
+
+      document.getElementById("menu").style.display = "flex";
+      document.getElementById("gameOver").classList.add("hidden");
+
+      document.getElementById("difficultyModal").style.display = "flex";
+    }
 
     function showInstruction() {
       playButtonSound();
@@ -515,7 +524,7 @@ const gameDiv = document.getElementById('game');
       const existingKey = localStorage.getItem("userKey");
 
       if (!name) {
-        alert("Please enter your name.");
+        alert("⚠️ Please Enter Your Name !");
         return;
       }
 
@@ -547,7 +556,7 @@ const gameDiv = document.getElementById('game');
 
       // ✅ Check for internet connection first
       if (!navigator.onLine) {
-        alert("⚠️ Internet Connection Is Slow or Unavailable.\n Please Check Your Connection And Try Again.");
+        alert("⚠️ Internet Connection Is Slow or Unavailable.\n Please Check Your Connection And Try Again !");
         return;
       }
 
@@ -632,8 +641,8 @@ const gameDiv = document.getElementById('game');
 
 
     function togglePause() {
+      if (!gameRunning || window.isCountingDown) return;
       playButtonSound();
-      if (!gameRunning) return;
 
       if (isPaused) {
         // 👉 Resume with countdown
@@ -650,7 +659,7 @@ const gameDiv = document.getElementById('game');
     function confirmEdit() {
       playButtonSound();
 
-      if (confirm('Are You Sure You Want To Edit Your User Name ?')) {
+      if (confirm('⚠️ Are You Sure You Want To Edit Your User Name ?')) {
         editUsername()
       } else {
         return;
@@ -662,7 +671,7 @@ const gameDiv = document.getElementById('game');
       playButtonSound();
 
       if (!navigator.onLine) {
-        alert("⚠️ Internet Connection Is Slow or Unavailable.\nPlease Check Your Connection And Try Again.");
+        alert("⚠️ Internet Connection Is Slow or Unavailable.\nPlease Check Your Connection And Try Again !");
         return;
       }
 
@@ -682,7 +691,7 @@ const gameDiv = document.getElementById('game');
       const key = localStorage.getItem("userKey");
 
       if (!key || !newName) {
-        alert("Invalid input or missing user ID.");
+        alert("❌ Invalid Input Or Missing User ID !");
         return;
       }
 
@@ -697,14 +706,14 @@ const gameDiv = document.getElementById('game');
         if (localStorage.getItem("sound") !== "off") {
           CongratulationsSound.play();
         }
-        alert(" Your name has been updated Successfully !! ");
+        alert("✅ Your Name Has Been Updated Successfully !");
 
         // ✅ Update name on screen if displayed somewhere (optional)
         const nameElement = document.getElementById("playerNameDisplay");
         if (nameElement) nameElement.textContent = newName;
       })
       .catch(error => {
-        alert("Update failed: " + error.message);
+        alert("❌ Update Failed: " + error.message);
       });
     }
 
@@ -715,10 +724,14 @@ const gameDiv = document.getElementById('game');
     }
 
     function startCountdownThenResume() {
-      draw();
+      document.getElementById("pauseBtn").style.display = "inline-block";
+      document.getElementById("resumeBtn").style.display = "none";
 
+      // ✅ Prevent multiple countdowns
       if (window.isCountingDown) return;
-      window.isCountingDown = true;
+      window.isCountingDown = true; // 🔒 disable pause/exit buttons
+
+      draw();
 
       const overlay = document.getElementById("countdownOverlay");
       const text = document.getElementById("countdownText");
@@ -726,6 +739,7 @@ const gameDiv = document.getElementById('game');
 
       let count = 3;
       text.textContent = count;
+
       if (localStorage.getItem("sound") !== "off") {
         countdownSound.play();
       }
@@ -744,28 +758,22 @@ const gameDiv = document.getElementById('game');
             goSound.play();
           }
           vibrateMobile(300); // subtle buzz to indicate game started
-
         } else {
           clearInterval(interval);
           overlay.style.display = "none";
-          text.textContent = ""; // Optional reset
+          text.textContent = "";
 
-          // ✅ Fix: Clear any previous game interval before starting new one
-          clearInterval(gameInterval); 
-
-          // ✅ Start the game loop fresh
-          gameInterval = setInterval(gameLoop, speed);
+          clearInterval(gameInterval); // Stop any old loop
+          gameInterval = setInterval(gameLoop, speed); // Start fresh
 
           isPaused = false;
           gameRunning = true;
 
-          document.getElementById("pauseBtn").style.display = "inline-block";
-          document.getElementById("resumeBtn").style.display = "none";
-
-          window.isCountingDown = false;
+          window.isCountingDown = false; // ✅ allow pause/exit again
         }
       }, 1000);
     }
+
 
     function saveHighScore(score) {
       const name = localStorage.getItem("playerName");
@@ -785,7 +793,7 @@ const gameDiv = document.getElementById('game');
       playButtonSound();
 
       if (!navigator.onLine) {
-        alert("⚠️ Internet Connection Is Slow or Unavailable.\nPlease Check Your Connection And Try Again.");
+        alert("⚠️ Internet Connection Is Slow or Unavailable.\nPlease Check Your Connection And Try Again !");
         return;
       }
 
@@ -856,32 +864,26 @@ const gameDiv = document.getElementById('game');
       playButtonSound();
 
       if (selectedRating === 0) {
-        alert("Please Select A Rating.");
+        alert("⚠️ Please Select A Rating !");
         return;
       }
 
       const userKey = localStorage.getItem("userKey");
       if (!userKey) {
-        alert("User Not Identified. Please Log In Again.");
+        alert("⚠️ User Not Identified. Please Log In Again !");
         return;
       }
 
-      const feedbackRef = firebase.database().ref("feedbacks/" + userKey);
+      // Reference to feedback under user
+      const feedbackRef = firebase.database().ref("users/" + userKey + "/feedback");
 
-      const feedbackData = {
-        rating: selectedRating,
-        timestamp: Date.now()
-      };
-
-      // Save/overwrite feedback for this userKey
-      feedbackRef.set(feedbackData).then(() => {
+      // Just save the rating
+      feedbackRef.set(selectedRating).then(() => {
         if (localStorage.getItem("sound") !== "off") {
           CongratulationsSound.play();
         }
-        alert("Thank You For Your Feedback! 💖");
-        selectedRating = 0;
-        closeFeedback();
-        document.querySelectorAll(".star").forEach(s => s.classList.remove("selected"));
+        alert("💖 Thank You For Your Feedback !");
+        closeFeedback(); // Close the modal only, don't reset rating or stars
       });
     }
 
@@ -890,15 +892,38 @@ const gameDiv = document.getElementById('game');
     function showFeedback() {
       playButtonSound();
 
-      // ✅ Check for internet connection first
       if (!navigator.onLine) {
-        alert("⚠️ Internet Connection Is Slow or Unavailable.\nPlease Check Your Connection And Try Again.");
+        alert("⚠️ Internet Connection Is Slow or Unavailable.\nPlease Check Your Connection And Try Again !");
         return;
       }
 
-      loadAverageRating(); // ✅ Load and show average stars
-      document.getElementById("feedbackModal").style.display = "flex"; // ✅ Show modal
+      loadAverageRating();
+
+      document.getElementById("feedbackModal").style.display = "flex";
+
+      const userKey = localStorage.getItem("userKey");
+      if (!userKey) return;
+
+      // ✅ Fetch previously stored feedback
+      const ref = firebase.database().ref("users/" + userKey + "/feedback");
+      ref.once("value", snapshot => {
+        const feedback = snapshot.val();
+        if (feedback !== null && feedback >= 1 && feedback <= 5) {
+          selectedRating = feedback;
+
+          // Highlight stars
+          const stars = document.querySelectorAll(".star");
+          stars.forEach((s, i) => {
+            if (i < feedback) {
+              s.classList.add("selected");
+            } else {
+              s.classList.remove("selected");
+            }
+          });
+        }
+      });
     }
+
 
 
     function closeFeedback() {
@@ -909,7 +934,7 @@ const gameDiv = document.getElementById('game');
 
     function loadAverageRating() {
       const avgEl = document.getElementById("avgRatingValue");
-      const ref = firebase.database().ref("feedbacks");
+      const ref = firebase.database().ref("users");
 
       ref.once("value", snapshot => {
         const data = snapshot.val();
@@ -918,16 +943,23 @@ const gameDiv = document.getElementById('game');
           return;
         }
 
-        const ratings = Object.values(data).map(f => f.rating);
-        const average = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+        // Extract feedback values
+        const ratings = Object.values(data)
+          .filter(user => user.feedback !== undefined)
+          .map(user => user.feedback);
 
-        // Format to 1 decimal
+        if (ratings.length === 0) {
+          avgEl.textContent = "No ratings yet.";
+          return;
+        }
+
+        const average = ratings.reduce((a, b) => a + b, 0) / ratings.length;
         const formatted = average.toFixed(1);
-        
-        // Show stars with number
+
         avgEl.innerHTML = `⭐ ${formatted} (${ratings.length} votes)`;
       });
     }
+
 
     function playButtonSound() {      
       buttonSound.volume = 0.5;
@@ -985,7 +1017,7 @@ const gameDiv = document.getElementById('game');
       const serial = parseInt(document.getElementById("deleteSerial").value);
 
       if (!nameToDelete || isNaN(serial)) {
-        alert("Please enter both name and serial number.");
+        alert("⚠️ Please Enter Both Name And Serial Number ! ");
         return;
       }
 
@@ -995,7 +1027,7 @@ const gameDiv = document.getElementById('game');
         const users = snapshot.val();
 
         if (!users) {
-          alert("No users found.");
+          alert("❌ No Users Found ! ");
           return;
         }
 
@@ -1007,12 +1039,12 @@ const gameDiv = document.getElementById('game');
               // Delete the matched user
               firebase.database().ref("users/" + userKey).remove()
                 .then(() => {
-                  alert(`✅ User "${nameToDelete}" (match #${serial}) deleted successfully.`);
+                  alert(`✅ User "${nameToDelete}" (Match #${serial}) Deleted Successfully !`);
                   closeAdminDelete();
                 })
                 .catch((error) => {
                   console.error("Delete failed:", error);
-                  alert("❌ Error deleting user.");
+                  alert("❌ Error Deleting User.");
                 });
               return;
             }
@@ -1021,7 +1053,7 @@ const gameDiv = document.getElementById('game');
 
         // If match not found
         if (matchedCount < serial) {
-          alert(`⚠️ Only ${matchedCount} "${nameToDelete}" found. Serial #${serial} doesn't exist.`);
+          alert(`⚠️ Only ${matchedCount} "${nameToDelete}" Found. Serial #${serial} Doesn't Exist.`);
         }
       });
     }
@@ -1083,10 +1115,10 @@ const gameDiv = document.getElementById('game');
 
     function closeSettings() {
       if (localStorage.getItem("sound") !== "off") {
-        CongratulationsSound.play();
+        buttonSound.play();
       }
 
-      alert(" Settings has been updated Successfully !! ");
+      alert(" ✅ Settings Has Been Updated Successfully !! ");
       settingsModal.style.display = "none";
 
       // Save settings
@@ -1119,13 +1151,13 @@ const gameDiv = document.getElementById('game');
       const newHighScore = parseInt(document.getElementById("updateHighScore").value.trim());
 
       if (!name || isNaN(serial) || isNaN(newHighScore)) {
-        alert("⚠️ Please fill in all fields correctly.");
+        alert("⚠️ Please Fill In All Fields Correctly.");
         return;
       }
 
       firebase.database().ref("users").once("value", snapshot => {
         if (!snapshot.exists()) {
-          alert("❌ No users found in database.");
+          alert("❌ No Users Found In Database.");
           return;
         }
 
@@ -1139,26 +1171,26 @@ const gameDiv = document.getElementById('game');
         });
 
         if (matchingUsers.length === 0) {
-          alert(`❌ No user found with the name "${name}".`);
+          alert(`❌ No User Found With The Name "${name}".`);
           return;
         }
 
         if (serial < 1 || serial > matchingUsers.length) {
-          alert(`❌ Invalid serial number. Only ${matchingUsers.length} users found with name "${name}".`);
+          alert(`❌ Invalid Serial Number. Only ${matchingUsers.length} Users Found With Name "${name}".`);
           return;
         }
 
         const selectedUser = matchingUsers[serial - 1];
-        console.log("Updating user:", selectedUser);
+        console.log("Updating User:", selectedUser);
 
         firebase.database().ref("users/" + selectedUser.key).update({
           highScore: newHighScore
         }).then(() => {
-          alert(`✅ High score updated to ${newHighScore} for "${name}" (#${serial}).`);
+          alert(`✅ High Score Updated To ${newHighScore} For "${name}" (#${serial}).`);
           document.getElementById('adminUseModal').style.display = 'none';
           document.getElementById('adminUpdateContainer').style.display = 'none';
         }).catch(error => {
-          alert("❌ Error updating high score: " + error.message);
+          alert("❌ Error Updating High Score: " + error.message);
         });
       });
     });
