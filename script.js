@@ -233,7 +233,6 @@ const gameDiv = document.getElementById('game');
           CongratulationsSound.play();
         }
         highScore = score;
-        localStorage.setItem('snakeHighScore', highScore);
 
         saveHighScore(score); // ✅ Save to leaderboard without duplicates
       } else {
@@ -273,11 +272,10 @@ const gameDiv = document.getElementById('game');
 
 
     function pauseGame() { isPaused = true; }
+
     function resumeGame() { if (gameRunning) isPaused = false; }
 
-    function restartGame() {
-      startGame();
-    }
+    function restartGame() { startGame(); }
 
     function selectDifficulty() {
       playButtonSound();
@@ -318,10 +316,6 @@ const gameDiv = document.getElementById('game');
 
     function newGame() {
       playButtonSound();
-
-      document.getElementById("menu").style.display = "flex";
-      document.getElementById("gameOver").classList.add("hidden");
-
       document.getElementById("difficultyModal").style.display = "flex";
     }
 
@@ -398,9 +392,6 @@ const gameDiv = document.getElementById('game');
       else if (key === "KeyQ" && gameOver) showMenu();
     });
 
-    // ✅ Load high score
-    highScore = parseInt(localStorage.getItem('snakeHighScore')) || 0;
-
 
     function resizeGame() {
       const wrapper = document.getElementById('gameWrapper');
@@ -448,7 +439,7 @@ const gameDiv = document.getElementById('game');
 
     // Show mobile controls only on mobile
     window.addEventListener('DOMContentLoaded', () => {
-      const mobileControls = document.getElementById('mobileControls');
+      const mobileControls = document.getElementById('joystick-container');
       if (isMobileDevice()) {
         mobileControls.style.display = 'flex';
       } else {
@@ -458,6 +449,8 @@ const gameDiv = document.getElementById('game');
 
     
     window.addEventListener("load", () => {
+      loadHighScore()
+
       const userKey = localStorage.getItem("userKey");
       const playerName = localStorage.getItem("playerName");
 
@@ -782,9 +775,8 @@ const gameDiv = document.getElementById('game');
       if (!key || !name) return;
 
       // Save or update high score for the unique user
-      firebase.database().ref("highscores/" + key).set({
-        name: name,
-        score: score
+      firebase.database().ref("users/" + key).update({
+        highScore: score
       });
     }
 
@@ -1150,6 +1142,8 @@ const gameDiv = document.getElementById('game');
       const serial = parseInt(document.getElementById("updateSerial").value.trim());
       const newHighScore = parseInt(document.getElementById("updateHighScore").value.trim());
 
+      highScore = newHighScore;
+
       if (!name || isNaN(serial) || isNaN(newHighScore)) {
         alert("⚠️ Please Fill In All Fields Correctly.");
         return;
@@ -1194,3 +1188,29 @@ const gameDiv = document.getElementById('game');
         });
       });
     });
+
+    function loadHighScore() {
+      const key = localStorage.getItem("userKey");
+      if (!key) return;
+
+      firebase.database().ref("users/" + key).once("value").then(snapshot => {
+        const data = snapshot.val();
+        highScore = parseInt(data?.highScore) || 0;
+
+        // Update UI if needed
+        document.getElementById("highScoreDisplay").textContent = highScore;
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(".joystick-button").forEach(button => {
+        const dir = button.getAttribute("data-dir").toUpperCase();
+
+        // Touch for mobile
+        button.addEventListener("touchstart", () => move(dir));
+
+        // Click for desktop testing
+        button.addEventListener("click", () => move(dir));
+      });
+    });
+
