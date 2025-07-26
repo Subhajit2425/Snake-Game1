@@ -1201,16 +1201,3 @@ const gameDiv = document.getElementById('game');
         document.getElementById("highScoreDisplay").textContent = highScore;
       });
     }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      document.querySelectorAll(".joystick-button").forEach(button => {
-        const dir = button.getAttribute("data-dir").toUpperCase();
-
-        // Touch for mobile
-        button.addEventListener("touchstart", () => move(dir));
-
-        // Click for desktop testing
-        button.addEventListener("click", () => move(dir));
-      });
-    });
-
