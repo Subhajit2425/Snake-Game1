@@ -50,10 +50,13 @@ html, body {
 
     #mobileControls {
       margin-top: 20px;
-      display: none;
       flex-direction: column;
       align-items: center;
       gap: 10px;
+      display: grid;
+      grid-template-columns: 60px 60px 60px;
+      grid-template-rows: 60px 60px 60px;
+      justify-content: center;
     }
 
     .modal {
@@ -110,11 +113,6 @@ html, body {
     .mobileButtons:active {
       transform: scale(0.95);
       box-shadow: 0 0 5px #00ffe1, 0 0 10px #00ffe1;
-    }
-
-    .mobileRow {
-      display: flex;
-      gap: 15px;
     }
 
     .menuButtons, .overButtons {
@@ -413,7 +411,7 @@ html, body {
       gap: 8px;
     }
 
-    #joystick-container {
+    #mobileControls-container {
       display: flex;
       justify-content: center;
       align-items: center;
@@ -422,16 +420,7 @@ html, body {
       height: auto;
     }
 
-    #joystick {
-      display: grid;
-      grid-template-columns: 60px 60px 60px;
-      grid-template-rows: 60px 60px 60px;
-      gap: 10px;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .joystick-button {
+    .mobileControls-button {
       display: flex;
       justify-content: center;
       align-items: center;
@@ -447,14 +436,14 @@ html, body {
     }
 
     /* Positioning */
-    .joystick-button.up    { grid-column: 2; grid-row: 1; }
-    .joystick-button.left  { grid-column: 1; grid-row: 2; }
-    .joystick-button.right { grid-column: 3; grid-row: 2; }
-    .joystick-button.down  { grid-column: 2; grid-row: 3; }
+    .mobileControls-button.up    { grid-column: 2; grid-row: 1; }
+    .mobileControls-button.left  { grid-column: 1; grid-row: 2; }
+    .mobileControls-button.right { grid-column: 3; grid-row: 2; }
+    .mobileControls-button.down  { grid-column: 2; grid-row: 3; }
 
     /* Responsiveness */
     @media (max-width: 600px) {
-      #joystick {
+      #mobileControls {
         grid-template-columns: 50px 50px 50px;
         grid-template-rows: 50px 50px 50px;
       }

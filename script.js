@@ -439,7 +439,7 @@ const gameDiv = document.getElementById('game');
 
     // Show mobile controls only on mobile
     window.addEventListener('DOMContentLoaded', () => {
-      const mobileControls = document.getElementById('joystick-container');
+      const mobileControls = document.getElementById('mobileControls-container');
       if (isMobileDevice()) {
         mobileControls.style.display = 'flex';
       } else {
