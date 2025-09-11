@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
 
   <!-- SEO -->
-  <title>Play Snake 2.0 - A Classic Game Reimagined!</title>
+  <title>Play Snake 1.0 - A Classic Game Reimagined!!</title>
   <meta name="description" content="Enjoy a mobile-friendly modern Snake game. Try it now!">
   <meta name="keywords" content="Snake Game, Snake 2.0 by Subhajit, Play Snake Online, Modern Snake Game, Mobile Snake Game, HTML5 Snake Game, JavaScript Snake Game, Free Snake Game, Classic Snake Remake, Snake Game for Phone, Snake Browser Game, Snake Web Game">
   <meta name="author" content="Subhajit">
@@ -40,9 +40,9 @@
   <!-- ✅ Main Menu -->
   <div id="menu" class="overlay">
     <div style="height: 10vh;"></div>
-    <h1 id="SnakeM">SNAKE 2.0</h1>
+    <h1 id="SnakeM">SNAKE 1.0</h1>
     <div class="menuButtons">
-      <button class="insta-border-btn" onclick="selectDifficulty()">Start Game</button>
+      <button onclick="selectDifficulty()">Start Game</button>
       <button onclick="showUsers()">Community</button>
       <button onclick="showInstruction()">Instructions</button>
       <button onclick="showLeaderboard()">Leaderboard</button>
@@ -74,12 +74,14 @@
         </div>
     
         <!-- ✅ Mobile Controls -->
-        <div id="mobileControls-container">
-          <div id="mobileControls">
-            <button id="upBtn" aria-label="Move Up" class="mobileButtons up">⬆️</button>
-            <button id="leftBtn" aria-label="Move Left" class="mobileButtons left">⬅️</button>
-            <button id="downBtn" aria-label="Move Down" class="mobileButtons right">⬇️</button>
-            <button id="rightBtn" aria-label="Move Right" class="mobileButtons down">➡️</button>
+        <div id="mobileControls">
+          <div class="mobileRow">
+            <button id="upBtn" class="mobileButtons" aria-label="Move Up">⬆️</button>
+          </div>
+          <div class="mobileRow">
+            <button id="leftBtn" aria-label="Move Left" class="mobileButtons">⬅️</button>
+            <button id="downBtn" aria-label="Move Down" class="mobileButtons">⬇️</button>
+            <button id="rightBtn" aria-label="Move Right" class="mobileButtons">➡️</button>
           </div>
         </div>
       </div>

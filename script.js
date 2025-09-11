@@ -272,10 +272,11 @@ const gameDiv = document.getElementById('game');
 
 
     function pauseGame() { isPaused = true; }
-
     function resumeGame() { if (gameRunning) isPaused = false; }
 
-    function restartGame() { startGame(); }
+    function restartGame() {
+      startGame();
+    }
 
     function selectDifficulty() {
       playButtonSound();
@@ -439,7 +440,7 @@ const gameDiv = document.getElementById('game');
 
     // Show mobile controls only on mobile
     window.addEventListener('DOMContentLoaded', () => {
-      const mobileControls = document.getElementById('mobileControls-container');
+      const mobileControls = document.getElementById('mobileControls');
       if (isMobileDevice()) {
         mobileControls.style.display = 'flex';
       } else {

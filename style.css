@@ -50,13 +50,10 @@ html, body {
 
     #mobileControls {
       margin-top: 20px;
+      display: none;
       flex-direction: column;
       align-items: center;
       gap: 10px;
-      display: grid;
-      grid-template-columns: 60px 60px 60px;
-      grid-template-rows: 60px 60px 60px;
-      justify-content: center;
     }
 
     .modal {
@@ -101,25 +98,23 @@ html, body {
 
     .mobileButtons {
       background: transparent;
+      border: none;
       font-size: 2rem;
       color: white;
       box-shadow: none;
       cursor: pointer;
       touch-action: manipulation;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border: 2px solid #777;
-      border-radius: 10px;
-      width: 100%;
-      height: 100%;
-      touch-action: none; /* Prevent double tap zoom */
-      user-select: none;
     }
+
 
     .mobileButtons:active {
       transform: scale(0.95);
       box-shadow: 0 0 5px #00ffe1, 0 0 10px #00ffe1;
+    }
+
+    .mobileRow {
+      display: flex;
+      gap: 15px;
     }
 
     .menuButtons, .overButtons {
@@ -416,28 +411,4 @@ html, body {
       display: flex;
       align-items: center;
       gap: 8px;
-    }
-
-    #mobileControls-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 10px;
-      width: 100%;
-      height: auto;
-    }
-    
-
-    /* Positioning */
-    .mobileButtons.up    { grid-column: 2; grid-row: 1; }
-    .mobileButtons.left  { grid-column: 1; grid-row: 2; }
-    .mobileButtons.right { grid-column: 3; grid-row: 2; }
-    .mobileButtons.down  { grid-column: 2; grid-row: 3; }
-
-    /* Responsiveness */
-    @media (max-width: 600px) {
-      #mobileControls {
-        grid-template-columns: 50px 50px 50px;
-        grid-template-rows: 50px 50px 50px;
-      }
     }
