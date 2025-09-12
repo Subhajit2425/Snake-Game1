@@ -471,26 +471,33 @@ const gameDiv = document.getElementById('game');
     // 📱 Swipe controls
     let startX, startY;
 
-    canvas.addEventListener("touchstart", e => {
+    // Touch start anywhere on screen
+    document.addEventListener("touchstart", e => {
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
     });
 
-    canvas.addEventListener("touchend", e => {
+    // Touch end anywhere on screen
+    document.addEventListener("touchend", e => {
       let endX = e.changedTouches[0].clientX;
       let endY = e.changedTouches[0].clientY;
 
       let dx = endX - startX;
       let dy = endY - startY;
 
+      // Minimum swipe distance (to prevent tiny accidental swipes)
+      const minSwipeDist = 30;
+
       if (Math.abs(dx) > Math.abs(dy)) {
-        // Horizontal swipe
-        if (dx > 0) move("RIGHT");
-        else move("LEFT");
+        if (Math.abs(dx) > minSwipeDist) {
+          if (dx > 0) move("RIGHT");
+          else move("LEFT");
+        }
       } else {
-        // Vertical swipe
-        if (dy > 0) move("DOWN");
-        else move("UP");
+        if (Math.abs(dy) > minSwipeDist) {
+          if (dy > 0) move("DOWN");
+          else move("UP");
+        }
       }
     });
 
