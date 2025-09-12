@@ -471,7 +471,6 @@ const gameDiv = document.getElementById('game');
     // 📱 Swipe controls
     let startX, startY, startTime;
     let swipeHandled = false;
-    let nextDir = null; // ✅ buffer for queued direction
 
     document.addEventListener("touchstart", e => {
       startX = e.touches[0].clientX;
@@ -504,12 +503,15 @@ const gameDiv = document.getElementById('game');
       }
 
       if (newDir) {
-        if (!directionLocked) {
-          // snake can turn now → apply immediately
-          move(newDir);
-        } else {
-          // snake is mid-frame → queue for next tick
-          nextDir = newDir;
+        // ✅ Instantly apply if valid turn
+        if (
+          (newDir === 'UP' && dir !== 'DOWN') ||
+          (newDir === 'DOWN' && dir !== 'UP') ||
+          (newDir === 'LEFT' && dir !== 'RIGHT') ||
+          (newDir === 'RIGHT' && dir !== 'LEFT')
+        ) {
+          dir = newDir;  
+          directionLocked = true; // still prevents mid-frame spam
         }
         swipeHandled = true;
       }
@@ -518,15 +520,6 @@ const gameDiv = document.getElementById('game');
     document.addEventListener("touchend", () => {
       swipeHandled = false;
     });
-
-    // ✅ At the end of each game tick (inside your main loop):
-    function unlockDirection() {
-      directionLocked = false;
-      if (nextDir) {
-        move(nextDir); // apply buffered swipe
-        nextDir = null; // clear buffer
-      }
-    }
     
 
 
