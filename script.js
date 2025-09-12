@@ -469,38 +469,65 @@ const gameDiv = document.getElementById('game');
     });
 
     // 📱 Swipe controls
-    let startX, startY;
+    let startX, startY, startTime;
+    let swipeHandled = false;
+    let nextDir = null; // ✅ buffer for queued direction
 
-    // Touch start anywhere on screen
     document.addEventListener("touchstart", e => {
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
+      startTime = e.timeStamp;
+      swipeHandled = false;
     });
 
-    // Touch end anywhere on screen
-    document.addEventListener("touchend", e => {
-      let endX = e.changedTouches[0].clientX;
-      let endY = e.changedTouches[0].clientY;
+    document.addEventListener("touchmove", e => {
+      if (swipeHandled) return;
 
-      let dx = endX - startX;
-      let dy = endY - startY;
+      let currentX = e.touches[0].clientX;
+      let currentY = e.touches[0].clientY;
 
-      // Minimum swipe distance (to prevent tiny accidental swipes)
-      const minSwipeDist = 30;
+      let dx = currentX - startX;
+      let dy = currentY - startY;
 
-      if (Math.abs(dx) > Math.abs(dy)) {
-        if (Math.abs(dx) > minSwipeDist) {
-          if (dx > 0) move("RIGHT");
-          else move("LEFT");
+      let absDx = Math.abs(dx);
+      let absDy = Math.abs(dy);
+
+      let elapsed = e.timeStamp - startTime;
+      let minSwipeDist = elapsed < 150 ? 15 : 30;
+
+      let newDir = null;
+
+      if (absDx > absDy && absDx > minSwipeDist) {
+        newDir = dx > 0 ? "RIGHT" : "LEFT";
+      } else if (absDy > minSwipeDist) {
+        newDir = dy > 0 ? "DOWN" : "UP";
+      }
+
+      if (newDir) {
+        if (!directionLocked) {
+          // snake can turn now → apply immediately
+          move(newDir);
+        } else {
+          // snake is mid-frame → queue for next tick
+          nextDir = newDir;
         }
-      } else {
-        if (Math.abs(dy) > minSwipeDist) {
-          if (dy > 0) move("DOWN");
-          else move("UP");
-        }
+        swipeHandled = true;
       }
     });
 
+    document.addEventListener("touchend", () => {
+      swipeHandled = false;
+    });
+
+    // ✅ At the end of each game tick (inside your main loop):
+    function unlockDirection() {
+      directionLocked = false;
+      if (nextDir) {
+        move(nextDir); // apply buffered swipe
+        nextDir = null; // clear buffer
+      }
+    }
+    
 
 
     function resizeGame() {
