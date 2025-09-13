@@ -524,6 +524,7 @@ const gameDiv = document.getElementById('game');
       swipeHandled = false;
     }
 
+    enableSwipe();
 
     function enableSwipe() {
       document.addEventListener("touchstart", handleTouchStart, { passive: true });
@@ -542,26 +543,26 @@ const gameDiv = document.getElementById('game');
     let controlMode = localStorage.getItem("controlMode") || "buttons";
 
     function applyControlMode() {
-      if (controlMode === "buttons") {
-        // show on-screen buttons (if you have a container)
-        const container = document.getElementById("control-buttons");
-        if (container) container.style.display = ""; // or 'flex'
+      const mobileControls = document.getElementById("mobileControls");
 
-        // enable buttons (see note below) and disable swipe
-        enableButtons?.();   // if you have enableButtons() from earlier snippet
+      if (isMobileDevice()) {
+        if (controlMode === "buttons") {
+          mobileControls.style.display = "flex";
+          disableSwipe();
+        } else if (controlMode === "swipe") {
+          mobileControls.style.display = "none";
+          enableSwipe();
+        } else { // keyboard only
+          mobileControls.style.display = "none";
+          disableSwipe();
+        }
+      } else {
+        // On desktop → always hide buttons & disable swipe
+        mobileControls.style.display = "none";
         disableSwipe();
-        // optionally enable keyboard if you use enableKeyboard()
-        enableKeyboard?.();
-      } else { // "swipe"
-        const container = document.getElementById("control-buttons");
-        if (container) container.style.display = "none";
-
-        disableButtons?.();
-        enableSwipe();
-        // optionally disable keyboard if you want keyboard only with buttons
-        disableKeyboard?.();
       }
     }
+
 
     // radio change handler (live apply)
     document.querySelectorAll('input[name="controlMode"]').forEach(radio => {
@@ -579,6 +580,22 @@ const gameDiv = document.getElementById('game');
       applyControlMode();
     });
 
+
+   // ✅ Call resizeGame on page load and when resizing the window
+    window.addEventListener("resize", resizeGame);
+    window.addEventListener("load", resizeGame);
+
+    // Detect if it's a touch device (mobile/tablet)
+    function isMobileDevice() {
+      const ua = navigator.userAgent || navigator.vendor || window.opera;
+
+      // Check common mobile device indicators in user agent
+      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+      const isMobileAgent = /android|iphone|ipad|ipod|opera mini|iemobile|mobile/i.test(ua);
+
+      return isTouch || isMobileAgent;
+    }
 
 
     function resizeGame() {
@@ -607,33 +624,6 @@ const gameDiv = document.getElementById('game');
       scaleBox.style.padding = '10px'; // can tweak as needed
 
     }
-
-   // ✅ Call resizeGame on page load and when resizing the window
-    window.addEventListener("resize", resizeGame);
-    window.addEventListener("load", resizeGame);
-
-    // Detect if it's a touch device (mobile/tablet)
-    function isMobileDevice() {
-      const ua = navigator.userAgent || navigator.vendor || window.opera;
-
-      // Check common mobile device indicators in user agent
-      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
-      const isMobileAgent = /android|iphone|ipad|ipod|opera mini|iemobile|mobile/i.test(ua);
-
-      return isTouch || isMobileAgent;
-    }
-
-
-    // Show mobile controls only on mobile
-    window.addEventListener('DOMContentLoaded', () => {
-      const mobileControls = document.getElementById('mobileControls');
-      if (isMobileDevice() && controlMode === "buttons") {
-        mobileControls.style.display = 'flex';
-      } else {
-        mobileControls.style.display = 'none';
-      }
-    });
 
     
     window.addEventListener("load", () => {
