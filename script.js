@@ -448,7 +448,7 @@ const gameDiv = document.getElementById('game');
 
 
     // ✅ Keyboard Controls
-    window.addEventListener("keydown", e => {
+     window.addEventListener("keydown", e => {
       const key = e.code;
 
       const startIfNeeded = (newDir, blockDir) => {
@@ -468,19 +468,23 @@ const gameDiv = document.getElementById('game');
       else if (key === "KeyQ" && gameOver) showMenu();
     });
 
-    // 📱 Swipe controls
+
+        // 📱 Swipe variables (shared)
     let startX, startY, startTime;
     let swipeHandled = false;
 
-    document.addEventListener("touchstart", e => {
+    // Swipe handlers (same logic, but named so we can add/remove them)
+    function handleTouchStart(e) {
+      if (!e.touches || !e.touches[0]) return;
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
       startTime = e.timeStamp;
       swipeHandled = false;
-    });
+    }
 
-    document.addEventListener("touchmove", e => {
+    function handleTouchMove(e) {
       if (swipeHandled) return;
+      if (!e.touches || !e.touches[0]) return;
 
       let currentX = e.touches[0].clientX;
       let currentY = e.touches[0].clientY;
@@ -503,24 +507,78 @@ const gameDiv = document.getElementById('game');
       }
 
       if (newDir) {
-        // ✅ Instantly apply if valid turn
         if (
           (newDir === 'UP' && dir !== 'DOWN') ||
           (newDir === 'DOWN' && dir !== 'UP') ||
           (newDir === 'LEFT' && dir !== 'RIGHT') ||
           (newDir === 'RIGHT' && dir !== 'LEFT')
         ) {
-          dir = newDir;  
-          directionLocked = true; // still prevents mid-frame spam
+          dir = newDir;
+          directionLocked = true; // keep your spam-prevention
         }
         swipeHandled = true;
       }
+    }
+
+    function handleTouchEnd() {
+      swipeHandled = false;
+    }
+
+
+    function enableSwipe() {
+      document.addEventListener("touchstart", handleTouchStart, { passive: true });
+      document.addEventListener("touchmove", handleTouchMove, { passive: true });
+      document.addEventListener("touchend", handleTouchEnd, { passive: true });
+    }
+
+    function disableSwipe() {
+      document.removeEventListener("touchstart", handleTouchStart);
+      document.removeEventListener("touchmove", handleTouchMove);
+      document.removeEventListener("touchend", handleTouchEnd);
+    }
+    
+
+    // load saved mode or default to buttons
+    let controlMode = localStorage.getItem("controlMode") || "buttons";
+
+    function applyControlMode() {
+      if (controlMode === "buttons") {
+        // show on-screen buttons (if you have a container)
+        const container = document.getElementById("control-buttons");
+        if (container) container.style.display = ""; // or 'flex'
+
+        // enable buttons (see note below) and disable swipe
+        enableButtons?.();   // if you have enableButtons() from earlier snippet
+        disableSwipe();
+        // optionally enable keyboard if you use enableKeyboard()
+        enableKeyboard?.();
+      } else { // "swipe"
+        const container = document.getElementById("control-buttons");
+        if (container) container.style.display = "none";
+
+        disableButtons?.();
+        enableSwipe();
+        // optionally disable keyboard if you want keyboard only with buttons
+        disableKeyboard?.();
+      }
+    }
+
+    // radio change handler (live apply)
+    document.querySelectorAll('input[name="controlMode"]').forEach(radio => {
+      radio.addEventListener("change", (e) => {
+        controlMode = e.target.value;
+        localStorage.setItem("controlMode", controlMode);
+        applyControlMode();
+      });
     });
 
-    document.addEventListener("touchend", () => {
-      swipeHandled = false;
+    // initialize on load
+    window.addEventListener("load", () => {
+      const chosen = document.querySelector(`input[name="controlMode"][value="${controlMode}"]`);
+      if (chosen) chosen.checked = true;
+      applyControlMode();
     });
-    
+
 
 
     function resizeGame() {
@@ -570,8 +628,8 @@ const gameDiv = document.getElementById('game');
     // Show mobile controls only on mobile
     window.addEventListener('DOMContentLoaded', () => {
       const mobileControls = document.getElementById('mobileControls');
-      if (isMobileDevice()) {
-        mobileControls.style.display = 'none';
+      if (isMobileDevice() && controlMode === "buttons") {
+        mobileControls.style.display = 'flex';
       } else {
         mobileControls.style.display = 'none';
       }
