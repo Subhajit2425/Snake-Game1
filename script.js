@@ -448,7 +448,7 @@ const gameDiv = document.getElementById('game');
 
 
     // ✅ Keyboard Controls
-     window.addEventListener("keydown", e => {
+    window.addEventListener("keydown", e => {
       const key = e.code;
 
       const startIfNeeded = (newDir, blockDir) => {
@@ -467,135 +467,6 @@ const gameDiv = document.getElementById('game');
       else if (key === "KeyR" && gameOver) startGame();
       else if (key === "KeyQ" && gameOver) showMenu();
     });
-
-
-        // 📱 Swipe variables (shared)
-    let startX, startY, startTime;
-    let swipeHandled = false;
-
-    // Swipe handlers (same logic, but named so we can add/remove them)
-    function handleTouchStart(e) {
-      if (!e.touches || !e.touches[0]) return;
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-      startTime = e.timeStamp;
-      swipeHandled = false;
-    }
-
-    function handleTouchMove(e) {
-      if (swipeHandled) return;
-      if (!e.touches || !e.touches[0]) return;
-
-      let currentX = e.touches[0].clientX;
-      let currentY = e.touches[0].clientY;
-
-      let dx = currentX - startX;
-      let dy = currentY - startY;
-
-      let absDx = Math.abs(dx);
-      let absDy = Math.abs(dy);
-
-      let elapsed = e.timeStamp - startTime;
-      let minSwipeDist = elapsed < 150 ? 15 : 30;
-
-      let newDir = null;
-
-      if (absDx > absDy && absDx > minSwipeDist) {
-        newDir = dx > 0 ? "RIGHT" : "LEFT";
-      } else if (absDy > minSwipeDist) {
-        newDir = dy > 0 ? "DOWN" : "UP";
-      }
-
-      if (newDir) {
-        if (
-          (newDir === 'UP' && dir !== 'DOWN') ||
-          (newDir === 'DOWN' && dir !== 'UP') ||
-          (newDir === 'LEFT' && dir !== 'RIGHT') ||
-          (newDir === 'RIGHT' && dir !== 'LEFT')
-        ) {
-          dir = newDir;
-          directionLocked = true; // keep your spam-prevention
-        }
-        swipeHandled = true;
-      }
-    }
-
-    function handleTouchEnd() {
-      swipeHandled = false;
-    }
-
-    enableSwipe();
-
-    function enableSwipe() {
-      document.addEventListener("touchstart", handleTouchStart, { passive: true });
-      document.addEventListener("touchmove", handleTouchMove, { passive: true });
-      document.addEventListener("touchend", handleTouchEnd, { passive: true });
-    }
-
-    function disableSwipe() {
-      document.removeEventListener("touchstart", handleTouchStart);
-      document.removeEventListener("touchmove", handleTouchMove);
-      document.removeEventListener("touchend", handleTouchEnd);
-    }
-    
-
-    // load saved mode or default to buttons
-    let controlMode = localStorage.getItem("controlMode") || "buttons";
-
-    function applyControlMode() {
-      const mobileControls = document.getElementById("mobileControls");
-
-      if (isMobileDevice()) {
-        if (controlMode === "buttons") {
-          mobileControls.style.display = "flex";
-          disableSwipe();
-        } else if (controlMode === "swipe") {
-          mobileControls.style.display = "none";
-          enableSwipe();
-        } else { // keyboard only
-          mobileControls.style.display = "none";
-          disableSwipe();
-        }
-      } else {
-        // On desktop → always hide buttons & disable swipe
-        mobileControls.style.display = "none";
-        disableSwipe();
-      }
-    }
-
-
-    // radio change handler (live apply)
-    document.querySelectorAll('input[name="controlMode"]').forEach(radio => {
-      radio.addEventListener("change", (e) => {
-        controlMode = e.target.value;
-        localStorage.setItem("controlMode", controlMode);
-        applyControlMode();
-      });
-    });
-
-    // initialize on load
-    window.addEventListener("load", () => {
-      const chosen = document.querySelector(`input[name="controlMode"][value="${controlMode}"]`);
-      if (chosen) chosen.checked = true;
-      applyControlMode();
-    });
-
-
-   // ✅ Call resizeGame on page load and when resizing the window
-    window.addEventListener("resize", resizeGame);
-    window.addEventListener("load", resizeGame);
-
-    // Detect if it's a touch device (mobile/tablet)
-    function isMobileDevice() {
-      const ua = navigator.userAgent || navigator.vendor || window.opera;
-
-      // Check common mobile device indicators in user agent
-      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
-      const isMobileAgent = /android|iphone|ipad|ipod|opera mini|iemobile|mobile/i.test(ua);
-
-      return isTouch || isMobileAgent;
-    }
 
 
     function resizeGame() {
@@ -624,6 +495,33 @@ const gameDiv = document.getElementById('game');
       scaleBox.style.padding = '10px'; // can tweak as needed
 
     }
+
+   // ✅ Call resizeGame on page load and when resizing the window
+    window.addEventListener("resize", resizeGame);
+    window.addEventListener("load", resizeGame);
+
+    // Detect if it's a touch device (mobile/tablet)
+    function isMobileDevice() {
+      const ua = navigator.userAgent || navigator.vendor || window.opera;
+
+      // Check common mobile device indicators in user agent
+      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+      const isMobileAgent = /android|iphone|ipad|ipod|opera mini|iemobile|mobile/i.test(ua);
+
+      return isTouch || isMobileAgent;
+    }
+
+
+    // Show mobile controls only on mobile
+    window.addEventListener('DOMContentLoaded', () => {
+      const mobileControls = document.getElementById('mobileControls');
+      if (isMobileDevice()) {
+        mobileControls.style.display = 'flex';
+      } else {
+        mobileControls.style.display = 'none';
+      }
+    });
 
     
     window.addEventListener("load", () => {
