@@ -613,16 +613,15 @@ const gameDiv = document.getElementById('game');
         .then(() => {
           // ✅ Save key and name locally
           localStorage.setItem("userKey", newRef.key);
+          userKey = newRef.key;
           localStorage.setItem("playerName", name);
+          playerName = name;
           localStorage.setItem("gameNum", 0);
           gameNo = 0;
           localStorage.setItem("averageScore", 0);
           averageScore = 0;
           localStorage.setItem("totalScore", 0);
           totalScore = 0;
-
-          userKey = newRef.key;
-          playerName = name;
 
           document.getElementById("loginModal").style.display = "none";
           document.getElementById("menu").style.display = "flex"; // 👈 ensure menu shows
@@ -1271,8 +1270,5 @@ const gameDiv = document.getElementById('game');
       firebase.database().ref("users/" + userKey).once("value").then(snapshot => {
         const data = snapshot.val();
         highScore = parseInt(data?.highScore) || 0;
-
-        // Update UI if needed
-        document.getElementById("highScoreDisplay").textContent = highScore;
       });
     }
