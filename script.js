@@ -598,32 +598,41 @@ const gameDiv = document.getElementById('game');
       if (existingKey) {
         localStorage.setItem("playerName", name);
         document.getElementById("loginModal").style.display = "none";
-        
+        document.getElementById("menu").style.display = "flex"; // 👈 also show menu
         return;
       }
 
-      // 👉 Push new user only if not already registered on this device
-      const newRef = firebase.database().ref("users").push({
-        name: name,
-        timestamp: Date.now()
-      });
+      // 👉 Create new user reference
+      const newRef = firebase.database().ref("users").push();
 
-      // ✅ Save key and name locally
-      localStorage.setItem("userKey", newRef.key);
-      localStorage.setItem("playerName", name);
-      localStorage.setItem("gameNum", 0);
-      gameNo = 0;
-      localStorage.setItem("averageScore", 0);
-      averageScore = 0;
-      localStorage.setItem("totalScore", 0);
-      totalScore = 0;
+      newRef
+        .set({
+          name: name,
+          timestamp: Date.now()
+        })
+        .then(() => {
+          // ✅ Save key and name locally
+          localStorage.setItem("userKey", newRef.key);
+          localStorage.setItem("playerName", name);
+          localStorage.setItem("gameNum", 0);
+          gameNo = 0;
+          localStorage.setItem("averageScore", 0);
+          averageScore = 0;
+          localStorage.setItem("totalScore", 0);
+          totalScore = 0;
 
-      userKey = newRef.key;
-      playerName = name;
+          userKey = newRef.key;
+          playerName = name;
 
-      document.getElementById("loginModal").style.display = "none";
-      document.getElementById("menu").style.display = "flex";
+          document.getElementById("loginModal").style.display = "none";
+          document.getElementById("menu").style.display = "flex"; // 👈 ensure menu shows
+        })
+        .catch(err => {
+          console.error("Error creating user:", err);
+          alert("Something went wrong. Try again!");
+        });
     }
+
 
 
     function showUsers() {
