@@ -611,6 +611,12 @@ const gameDiv = document.getElementById('game');
       // ✅ Save key and name locally
       localStorage.setItem("userKey", newRef.key);
       localStorage.setItem("playerName", name);
+      localStorage.setItem("gameNum", 0);
+      gameNo = 0;
+      localStorage.setItem("averageScore", 0);
+      averageScore = 0;
+      localStorage.setItem("totalScore", 0);
+      totalScore = 0;
 
       userKey = newRef.key;
       playerName = name;
