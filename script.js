@@ -689,6 +689,7 @@ const gameDiv = document.getElementById('game');
     function submitName() {
       const input = document.getElementById("playerNameInput");
       const name = input.value.trim();
+      const existingKey = localStorage.getItem("userKey");
 
       if (!name) {
         alert("⚠️ Please Enter Your Name !");
@@ -696,7 +697,7 @@ const gameDiv = document.getElementById('game');
       }
 
       // ✅ If already registered, don't push again
-      if (userKey) {
+      if (existingKey) {
         localStorage.setItem("playerName", name);
         document.getElementById("loginModal").style.display = "none";
         
@@ -740,7 +741,6 @@ const gameDiv = document.getElementById('game');
       list.innerHTML = "";
       serialInfo.innerHTML = "";
 
-      const currentUser = localStorage.getItem("playerName");
 
       firebase.database().ref('users').once('value', (snapshot) => {
         const users = [];
@@ -760,7 +760,7 @@ const gameDiv = document.getElementById('game');
           name.textContent = user;
           name.classList.add("community-name");
 
-          if (user === currentUser) {
+          if (user === playerName) {
             name.style.color = "red";
             name.style.fontWeight = "bold";
             serialInfo.innerHTML = `👤 <strong>${index + 1}. ${user} (You) ❤️ </strong>`;
@@ -784,12 +784,10 @@ const gameDiv = document.getElementById('game');
 
 
     // ✅ Recover missing userKey for old users
-    window.addEventListener("load", () => {
-      const currentName = localStorage.getItem("playerName");
-
-      if (currentName && !userKey) {
+    window.addEventListener("load", () => {     
+      if (playerName && !userKey) {
         // Try to find the matching Firebase entry
-        firebase.database().ref("users").orderByChild("name").equalTo(currentName).once("value", snapshot => {
+        firebase.database().ref("users").orderByChild("name").equalTo(playerName).once("value", snapshot => {
           snapshot.forEach(child => {
             // Save the matched key
             localStorage.setItem("userKey", child.key);
@@ -836,9 +834,8 @@ const gameDiv = document.getElementById('game');
         return;
       }
 
-      const currentName = localStorage.getItem("playerName") || '';
       const input = document.getElementById("editNameInput");
-      input.value = currentName.trim();
+      input.value = playerName.trim();
       document.getElementById("editUsernameModal").style.display = "flex";
       document.getElementById("settingsModal").style.display = "none";
       input.focus();
@@ -940,9 +937,7 @@ const gameDiv = document.getElementById('game');
 
 
     function saveHighScore(score) {
-      const name = localStorage.getItem("playerName");
-
-      if (!userKey || !name) return;
+      if (!userKey || !playerName) return;
 
       // Save or update high score for the unique user
       firebase.database().ref("users/" + userKey).update({
@@ -1363,8 +1358,5 @@ const gameDiv = document.getElementById('game');
       firebase.database().ref("users/" + userKey).once("value").then(snapshot => {
         const data = snapshot.val();
         highScore = parseInt(data?.highScore) || 0;
-
-        // Update UI if needed
-        document.getElementById("highScoreDisplay").textContent = highScore;
       });
     }
