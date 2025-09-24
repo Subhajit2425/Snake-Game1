@@ -10,7 +10,7 @@ const gameDiv = document.getElementById('game');
     let cols = Math.floor(canvas.width / tileSize);
     let rows = Math.floor(canvas.height / tileSize);
 
-    const userKey = localStorage.getItem("userKey");
+    let userKey = localStorage.getItem("userKey");
     let playerName = localStorage.getItem("playerName");
     let gameNo = localStorage.getItem("gameNum");
     let averageScore = localStorage.getItem("averageScore");
@@ -448,7 +448,7 @@ const gameDiv = document.getElementById('game');
 
 
     // ✅ Keyboard Controls
-    window.addEventListener("keydown", e => {
+     window.addEventListener("keydown", e => {
       const key = e.code;
 
       const startIfNeeded = (newDir, blockDir) => {
@@ -467,6 +467,135 @@ const gameDiv = document.getElementById('game');
       else if (key === "KeyR" && gameOver) startGame();
       else if (key === "KeyQ" && gameOver) showMenu();
     });
+
+
+        // 📱 Swipe variables (shared)
+    let startX, startY, startTime;
+    let swipeHandled = false;
+
+    // Swipe handlers (same logic, but named so we can add/remove them)
+    function handleTouchStart(e) {
+      if (!e.touches || !e.touches[0]) return;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      startTime = e.timeStamp;
+      swipeHandled = false;
+    }
+
+    function handleTouchMove(e) {
+      if (swipeHandled) return;
+      if (!e.touches || !e.touches[0]) return;
+
+      let currentX = e.touches[0].clientX;
+      let currentY = e.touches[0].clientY;
+
+      let dx = currentX - startX;
+      let dy = currentY - startY;
+
+      let absDx = Math.abs(dx);
+      let absDy = Math.abs(dy);
+
+      let elapsed = e.timeStamp - startTime;
+      let minSwipeDist = elapsed < 150 ? 15 : 30;
+
+      let newDir = null;
+
+      if (absDx > absDy && absDx > minSwipeDist) {
+        newDir = dx > 0 ? "RIGHT" : "LEFT";
+      } else if (absDy > minSwipeDist) {
+        newDir = dy > 0 ? "DOWN" : "UP";
+      }
+
+      if (newDir) {
+        if (
+          (newDir === 'UP' && dir !== 'DOWN') ||
+          (newDir === 'DOWN' && dir !== 'UP') ||
+          (newDir === 'LEFT' && dir !== 'RIGHT') ||
+          (newDir === 'RIGHT' && dir !== 'LEFT')
+        ) {
+          dir = newDir;
+          directionLocked = true; // keep your spam-prevention
+        }
+        swipeHandled = true;
+      }
+    }
+
+    function handleTouchEnd() {
+      swipeHandled = false;
+    }
+
+    enableSwipe();
+
+    function enableSwipe() {
+      document.addEventListener("touchstart", handleTouchStart, { passive: true });
+      document.addEventListener("touchmove", handleTouchMove, { passive: true });
+      document.addEventListener("touchend", handleTouchEnd, { passive: true });
+    }
+
+    function disableSwipe() {
+      document.removeEventListener("touchstart", handleTouchStart);
+      document.removeEventListener("touchmove", handleTouchMove);
+      document.removeEventListener("touchend", handleTouchEnd);
+    }
+    
+
+    // load saved mode or default to buttons
+    let controlMode = localStorage.getItem("controlMode") || "buttons";
+
+    function applyControlMode() {
+      const mobileControls = document.getElementById("mobileControls");
+
+      if (isMobileDevice()) {
+        if (controlMode === "buttons") {
+          mobileControls.style.display = "flex";
+          disableSwipe();
+        } else if (controlMode === "swipe") {
+          mobileControls.style.display = "none";
+          enableSwipe();
+        } else { // keyboard only
+          mobileControls.style.display = "none";
+          disableSwipe();
+        }
+      } else {
+        // On desktop → always hide buttons & disable swipe
+        mobileControls.style.display = "none";
+        disableSwipe();
+      }
+    }
+
+
+    // radio change handler (live apply)
+    document.querySelectorAll('input[name="controlMode"]').forEach(radio => {
+      radio.addEventListener("change", (e) => {
+        controlMode = e.target.value;
+        localStorage.setItem("controlMode", controlMode);
+        applyControlMode();
+      });
+    });
+
+    // initialize on load
+    window.addEventListener("load", () => {
+      const chosen = document.querySelector(`input[name="controlMode"][value="${controlMode}"]`);
+      if (chosen) chosen.checked = true;
+      applyControlMode();
+    });
+
+
+   // ✅ Call resizeGame on page load and when resizing the window
+    window.addEventListener("resize", resizeGame);
+    window.addEventListener("load", resizeGame);
+
+    // Detect if it's a touch device (mobile/tablet)
+    function isMobileDevice() {
+      const ua = navigator.userAgent || navigator.vendor || window.opera;
+
+      // Check common mobile device indicators in user agent
+      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+      const isMobileAgent = /android|iphone|ipad|ipod|opera mini|iemobile|mobile/i.test(ua);
+
+      return isTouch || isMobileAgent;
+    }
 
 
     function resizeGame() {
@@ -496,33 +625,6 @@ const gameDiv = document.getElementById('game');
 
     }
 
-   // ✅ Call resizeGame on page load and when resizing the window
-    window.addEventListener("resize", resizeGame);
-    window.addEventListener("load", resizeGame);
-
-    // Detect if it's a touch device (mobile/tablet)
-    function isMobileDevice() {
-      const ua = navigator.userAgent || navigator.vendor || window.opera;
-
-      // Check common mobile device indicators in user agent
-      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
-      const isMobileAgent = /android|iphone|ipad|ipod|opera mini|iemobile|mobile/i.test(ua);
-
-      return isTouch || isMobileAgent;
-    }
-
-
-    // Show mobile controls only on mobile
-    window.addEventListener('DOMContentLoaded', () => {
-      const mobileControls = document.getElementById('mobileControls');
-      if (isMobileDevice()) {
-        mobileControls.style.display = 'flex';
-      } else {
-        mobileControls.style.display = 'none';
-      }
-    });
-
     
     window.addEventListener("load", () => {
       loadHighScore()
@@ -538,9 +640,9 @@ const gameDiv = document.getElementById('game');
       login.style.display = "none";
       menu.style.display = "none";
 
-      function checkAdminShowButton(userKey) {
+      function checkAdminShowButton(currentKey) {
         if (deleteBtnContainer) {
-          if (userKey === ADMIN_ID) {
+          if (currentKey === ADMIN_ID) {
             deleteBtnContainer.style.display = "flex";
           } else {
             deleteBtnContainer.style.display = "none";
@@ -587,7 +689,6 @@ const gameDiv = document.getElementById('game');
     function submitName() {
       const input = document.getElementById("playerNameInput");
       const name = input.value.trim();
-      const existingKey = localStorage.getItem("userKey");
 
       if (!name) {
         alert("⚠️ Please Enter Your Name !");
@@ -595,43 +696,34 @@ const gameDiv = document.getElementById('game');
       }
 
       // ✅ If already registered, don't push again
-      if (existingKey) {
+      if (userKey) {
         localStorage.setItem("playerName", name);
         document.getElementById("loginModal").style.display = "none";
-        document.getElementById("menu").style.display = "flex"; // 👈 also show menu
+        
         return;
       }
 
-      // 👉 Create new user reference
-      const newRef = firebase.database().ref("users").push();
+      // 👉 Push new user only if not already registered on this device
+      const newRef = firebase.database().ref("users").push({
+        name: name,
+        timestamp: Date.now()
+      });
 
-      newRef
-        .set({
-          name: name,
-          timestamp: Date.now()
-        })
-        .then(() => {
-          // ✅ Save key and name locally
-          localStorage.setItem("userKey", newRef.key);
-          userKey = newRef.key;
-          localStorage.setItem("playerName", name);
-          playerName = name;
-          localStorage.setItem("gameNum", 0);
-          gameNo = 0;
-          localStorage.setItem("averageScore", 0);
-          averageScore = 0;
-          localStorage.setItem("totalScore", 0);
-          totalScore = 0;
+      // ✅ Save key and name locally
+      localStorage.setItem("userKey", newRef.key);
+      userKey = newRef.key;
+      localStorage.setItem("playerName", name);
+      playerName = name;
+      localStorage.setItem("gameNum", 0);
+      gameNo = 0;
+      localStorage.setItem("averageScore", 0);
+      averageScore = 0;
+      localStorage.setItem("totalScore", 0);
+      totalScore = 0;
 
-          document.getElementById("loginModal").style.display = "none";
-          document.getElementById("menu").style.display = "flex"; // 👈 ensure menu shows
-        })
-        .catch(err => {
-          console.error("Error creating user:", err);
-          alert("Something went wrong. Try again!");
-        });
+      document.getElementById("loginModal").style.display = "none";
+      document.getElementById("menu").style.display = "flex";
     }
-
 
 
     function showUsers() {
@@ -970,6 +1062,7 @@ const gameDiv = document.getElementById('game');
 
       document.getElementById("feedbackModal").style.display = "flex";
 
+
       if (!userKey) return;
 
       // ✅ Fetch previously stored feedback
@@ -1270,5 +1363,8 @@ const gameDiv = document.getElementById('game');
       firebase.database().ref("users/" + userKey).once("value").then(snapshot => {
         const data = snapshot.val();
         highScore = parseInt(data?.highScore) || 0;
+
+        // Update UI if needed
+        document.getElementById("highScoreDisplay").textContent = highScore;
       });
     }
